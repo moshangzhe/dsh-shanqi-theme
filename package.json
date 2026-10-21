@@ -1,7 +1,7 @@
 {
   "name": "dsh-shanqi-theme",
-  "version": "0.1.7",
-  "description": "「山栖」田园主题：把 DeepSeek Harness 接入真实的山湖昼夜与农人思考联动。",
+  "version": "0.1.8",
+  "description": "「山栖」田园主题：把 DeepSeek Harness 接入真实的山湖昼夜与农人任务联动。",
   "type": "module",
   "main": "lib/index.js",
   "exports": {

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="山栖">
+  <rect width="64" height="64" rx="14" fill="#f7f2e2"/>
+  <circle cx="46" cy="18" r="6.5" fill="#e7c676"/>
+  <path d="M2 46 18 24 27 35 36 20 62 46Z" fill="#7f9270"/>
+  <path d="M2 46 18 24 27 35 36 20 62 46Z" fill="#a9b88f" opacity=".45"/>
+  <path d="M2 47q14-5 28-1t32-2v20H2Z" fill="#8fb6ae"/>
+  <path d="M2 50q16-4 30 0t30-1v15H2Z" fill="#6f9a95" opacity=".6"/>
+  <path d="M40 38h14v10H40Z" fill="#f4e7c8"/>
+  <path d="M37 38 47 31 57 38Z" fill="#b4573a"/>
+  <rect x="44" y="41" width="3.5" height="4" fill="#e9b968"/>
+  <rect x="50" y="41" width="3.5" height="4" fill="#e9b968"/>
+  <path d="M6 56c8-3 12 2 20 0s12 2 20 0" fill="none" stroke="#4f6b48" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>
+</svg>

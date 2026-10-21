@@ -1,0 +1,8 @@
+node_modules/
+*.tgz
+.pnpm-store/
+.test-build/
+.preview/
+*.log
+.DS_Store
+Thumbs.db

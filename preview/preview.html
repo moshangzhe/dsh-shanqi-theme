@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>山栖 · 场景预览</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: #10253e; }
+  body { font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif; color: #e8eddc; overflow: hidden; }
+  #stage { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  #stage svg { display: block; width: 100%; height: 100%; }
+  .shq-twinkle { animation: shq-twinkle 6s ease-in-out infinite alternate; }
+  .shq-firefly { animation: shq-firefly 5s ease-in-out infinite; }
+  .shq-smoke-plume { transform-origin: 286px 378px; animation: shq-smoke-rise 11s linear infinite; }
+  #stage[data-shq-ambient='off'] :is(.shq-twinkle, .shq-firefly, .shq-smoke-plume) { animation: none !important; }
+  @keyframes shq-twinkle { to { opacity: .22; } }
+  @keyframes shq-firefly { 0%,100% { opacity: 0; transform: translate(0,0); } 40% { opacity: .9; } 70% { opacity: .3; transform: translate(12px,-15px); } }
+  @keyframes shq-smoke-rise { 0% { transform: translate(0,14px) scale(.65,.5); opacity: 0; } 15% { opacity: .5; } 65% { opacity: .32; } 100% { transform: translate(27px,-95px) scale(1.5,1.6); opacity: 0; } }
+  .preview-panel {
+    position: fixed; z-index: 2; left: 24px; top: 24px; width: 320px; max-width: calc(100vw - 32px);
+    padding: 18px 18px 14px; border: 1px solid #e8eddc2e; border-radius: 14px;
+    background: #14241ee8; backdrop-filter: none; box-shadow: 0 20px 50px #07100c66;
+  }
+  .preview-panel h1 { margin: 0 0 2px; font-family: 'Songti SC', SimSun, serif; font-size: 22px; letter-spacing: .16em; }
+  .preview-panel p { margin: 0 0 14px; color: #a9b9a0; font-size: 12px; line-height: 1.7; }
+  .preview-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid #e8eddc1a; }
+  .preview-row label { font-size: 13px; }
+  .preview-row output { color: #d3e0ad; font-variant-numeric: tabular-nums; font-size: 13px; }
+  input[type='range'] { width: 100%; accent-color: #bccb93; margin: 8px 0 4px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0 2px; }
+  .presets button { padding: 4px 10px; border: 1px solid #e8eddc33; border-radius: 999px; background: transparent; color: #b9c7ad; font: inherit; font-size: 12px; cursor: pointer; }
+  .presets button:hover { border-color: #bccb93; color: #eef2df; }
+  .preview-note { margin-top: 10px; color: #8fa083; font-size: 11px; line-height: 1.7; }
+  .switch { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #b9c7ad; }
+  .switch input { accent-color: #bccb93; }
+  @media (max-width: 640px) {
+    .preview-panel { left: 12px; right: 12px; top: auto; bottom: 12px; width: auto; max-width: none; }
+  }
+</style>
+</head>
+<body>
+  <div id="stage" aria-hidden="true"></div>
+  <aside class="preview-panel" aria-label="场景预览控制">
+    <h1>山栖</h1>
+    <p>真实场景运行时预览 · 不代表 DSH 聊天或设置界面</p>
+    <input id="hour" type="range" min="0" max="24" step="0.1" value="12.5" aria-label="预览时刻">
+    <div class="preview-row"><span>场景时刻</span><output id="clock">12:30</output></div>
+    <div class="preview-row"><span>时段</span><output id="period">晴昼</output></div>
+    <div class="presets">
+      <button type="button" data-hour="6.6">晨光</button>
+      <button type="button" data-hour="12.5">晴昼</button>
+      <button type="button" data-hour="17.7">黄昏</button>
+      <button type="button" data-hour="22">静夜</button>
+    </div>
+    <div class="preview-row"><label class="switch"><input id="ambient" type="checkbox" checked> 环境微动</label><label class="switch"><input id="reduced" type="checkbox"> 减少动态</label></div>
+    <div class="preview-row"><label class="switch"><input id="farmer" type="checkbox" checked> 农人</label><label class="switch"><input id="thinking" type="checkbox"> 模拟任务工作</label></div>
+    <p class="preview-note">“模拟任务工作”只在预览中驱动农人进出场；真实主题由当前对话的 running 状态驱动（模型思考、工具调用与回答流式输出都算同一轮任务）。主题设置中的手动预览与此处互不影响。</p>
+  </aside>
+<script>/*__PREVIEW_SCRIPT__*/</script>
+</body>
+</html>

@@ -1,0 +1,796 @@
+/* 山栖 · dsh-shanqi-theme
+ * 所有规则都限定在插件自有标记（body[data-shq-theme] / .shq-* / [data-shq-*]）内，
+ * 不使用 CSS Module 哈希做布局判断。 */
+
+/* ---------- 宿主材质与背景 ---------- */
+body[data-shq-theme] {
+  --shq-serif: 'Songti SC', 'Noto Serif SC', 'Source Han Serif SC', SimSun, serif;
+  --shq-sans: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif;
+  --dsw-menu-backdrop-filter: none;
+  --dsw-mask-blur: none;
+  background-color: var(--dsw-alias-bg-base);
+}
+
+body[data-shq-theme][data-shq-night-ui] {
+  color-scheme: dark;
+}
+
+/* 入夜/天明时让主要界面材质平滑过渡，避免一整块突然变暗。 */
+body[data-shq-theme] :is(
+  [role='dialog'],
+  [role='menu'],
+  [role='listbox'],
+  [data-slot='sidebar'] > div,
+  [data-composer-card],
+  [data-code-block-content],
+  [data-testid='todo-panel']
+) {
+  transition: background-color .45s ease, color .45s ease, border-color .45s ease;
+}
+
+body[data-shq-theme] #root {
+  position: relative;
+  z-index: 1;
+}
+
+body[data-shq-theme] [data-shq-frame],
+body[data-shq-theme] [data-shq-column],
+body[data-shq-theme] [data-shq-conversation],
+body[data-shq-theme] [data-shq-conversation] [data-conversation-scroll],
+body[data-shq-theme] [data-shq-conversation] [data-composer-seat] {
+  background: transparent !important;
+}
+
+body[data-shq-theme] [data-shq-conversation] :is(
+  [data-slot='conversation.session'],
+  [data-slot='conversation.view'],
+  [data-slot='conversation.chat.flow'],
+  [data-chat-following-tail]
+) {
+  background: transparent !important;
+}
+
+/* 场景本身不拦截任何输入。 */
+.shq-stage {
+  position: fixed;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none !important;
+  user-select: none;
+  contain: layout paint;
+  background: var(--shq-sky-mid, #dde0c0);
+}
+.shq-stage[hidden] { display: none !important; }
+.shq-stage *,
+.shq-stage *::before,
+.shq-stage *::after { pointer-events: none !important; }
+.shq-world { display: block; width: 100%; height: 100%; }
+
+/* 夜间只保留静态星点与缓慢闪烁；减少动态效果时全部静止。 */
+.shq-star { transform-box: fill-box; }
+.shq-twinkle { animation: shq-twinkle 6s ease-in-out infinite alternate; }
+.shq-firefly { animation: shq-firefly 5s ease-in-out infinite; }
+.shq-smoke-plume {
+  transform-origin: 286px 378px;
+  animation: shq-smoke-rise 11s linear infinite;
+}
+.shq-stage[data-shq-ambient='off'] :is(.shq-twinkle, .shq-firefly, .shq-smoke-plume) {
+  animation: none !important;
+}
+.shq-stage[data-shq-ambient='off'] .shq-fireflies { visibility: hidden; }
+.shq-stage[data-shq-reduced='on'] :is(.shq-twinkle, .shq-firefly, .shq-smoke-plume) {
+  animation: none !important;
+}
+.shq-stage[data-shq-reduced='on'] .shq-smoke { opacity: .5; }
+.shq-stage[data-shq-paused='on'] * { animation-play-state: paused !important; }
+
+@keyframes shq-twinkle { to { opacity: .22; } }
+@keyframes shq-firefly {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  40% { opacity: .9; }
+  70% { opacity: .3; transform: translate(12px, -15px); }
+}
+@keyframes shq-smoke-rise {
+  0% { transform: translate(0, 14px) scale(.65, .5); opacity: 0; }
+  15% { opacity: .5; }
+  65% { opacity: .32; }
+  100% { transform: translate(27px, -95px) scale(1.5, 1.6); opacity: 0; }
+}
+
+/* ---------- 聊天：回答透明，用户气泡独立 ---------- */
+body[data-shq-theme] [data-shq-conversation] {
+  --dsw-specific-bubble: var(--shq-bubble-fill);
+  --dsw-alias-markdown-code-block: var(--shq-reading-fill);
+  --dsw-alias-markdown-code-block-banner: var(--shq-reading-fill);
+  --dsw-alias-markdown-inline-code: color-mix(in srgb, var(--shq-reading-fill) 72%, transparent);
+  --dsw-alias-markdown-citation: var(--shq-reading-fill);
+  --dsw-alias-turn-trigger-bg: var(--shq-reading-fill);
+  --dsw-alias-turn-trigger-bg-hover: var(--shq-reading-fill);
+  --dsl-code-block-background: var(--shq-reading-fill);
+  --dsl-code-block-banner-background-color: var(--shq-reading-fill);
+  --dsw-alias-label-primary: var(--shq-ink);
+  --dsw-alias-label-primary-bluish: var(--shq-ink);
+  --dsw-alias-label-primary-dimmed: var(--shq-ink-soft);
+  --dsw-alias-label-secondary: var(--shq-ink-soft);
+  --dsw-alias-label-tertiary: var(--shq-ink-muted);
+  --dsw-alias-label-caption: var(--shq-ink-muted);
+  --dsw-alias-label-dimmed: var(--shq-ink-muted);
+  --dsw-alias-state-business-primary: var(--shq-ink);
+  --dsw-alias-separator-primary: color-mix(in srgb, var(--shq-ink) 26%, transparent);
+  --dsw-alias-border-l1: color-mix(in srgb, var(--shq-ink) 12%, transparent);
+  --dsw-alias-border-l2: color-mix(in srgb, var(--shq-ink) 16%, transparent);
+  --dsw-alias-border-l3: color-mix(in srgb, var(--shq-ink) 22%, transparent);
+  --dsw-alias-border-l4: color-mix(in srgb, var(--shq-ink) 30%, transparent);
+  --dsw-alias-interactive-bg-hover: color-mix(in srgb, var(--shq-reading-fill) 70%, transparent);
+  --dsw-alias-interactive-bg-active: color-mix(in srgb, var(--shq-reading-fill) 88%, transparent);
+  --dsw-alias-interactive-bg-hover-solid: var(--shq-reading-fill);
+}
+
+body[data-shq-theme][data-shq-ink='light'] [data-shq-conversation] :is(
+  p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, summary
+) {
+  text-shadow: var(--shq-halo);
+}
+
+/* 夜间：对话内的卡片、悬浮层与阅读面一并沉色，避免亮纸压在夜景上。 */
+body[data-shq-theme][data-shq-ink='light'] [data-shq-conversation] {
+  --dsw-alias-bg-base: #16241e;
+  --dsw-alias-bg-layer-1: #1c2d25;
+  --dsw-alias-bg-layer-2: #21342b;
+  --dsw-alias-bg-layer-3: #273d32;
+  --dsw-alias-bg-layer-4: #2e473a;
+  --dsw-alias-bg-overlay: #22362c;
+  --dsw-alias-bg-module-platform: #1c2d25;
+  --dsw-alias-interactive-bg-hover-solid: #273d32;
+  --dsw-alias-button-elevated-fill: #1c2d25;
+  --dsw-alias-button-floating-fill: #1c2d25;
+  --dsw-alias-button-floating-hover: #21342b;
+  --dsw-alias-markdown-citation: #21342b;
+  --dsw-specific-input-major: rgba(22, 36, 30, 0.93);
+  /* 宿主浅色外观下的夜间代码高亮：与暗色阅读卡片配套 */
+  --shiki-foreground: var(--shq-reading-ink);
+  --shiki-background: var(--shq-reading-fill);
+  --shiki-token-constant: #79b8ff;
+  --shiki-token-string: #69db7c;
+  --shiki-token-comment: #a9b9a0;
+  --shiki-token-keyword: #faa2c1;
+  --shiki-token-parameter: #ffa94d;
+  --shiki-token-function: #b197fc;
+  --shiki-token-string-expression: #8ce99a;
+  --shiki-token-punctuation: #ced4da;
+  --shiki-token-link: #74c0fc;
+}
+body[data-shq-theme][data-shq-ink='light'] [data-shq-conversation] [data-testid='todo-panel'] {
+  color: #e8eddc;
+  border-color: rgba(232, 237, 220, 0.16);
+}
+body[data-shq-theme][data-shq-ink='light'] [data-shq-conversation] [data-testid='todo-panel'] :is(button, span) {
+  color: inherit;
+}
+
+/* 用户消息：唯一保留独立底色的聊天气泡。 */
+body[data-shq-theme] [data-shq-conversation] [class*='_bubble'] {
+  background: var(--shq-bubble-fill) !important;
+  color: var(--shq-bubble-ink) !important;
+  border: .5px solid color-mix(in srgb, var(--shq-bubble-ink) 12%, transparent);
+  border-radius: 16px 16px 5px 16px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .2);
+  backdrop-filter: none !important;
+}
+body[data-shq-theme] [data-shq-conversation] [class*='_bubble'] :is(span, p, a) {
+  color: inherit;
+}
+
+/* 回答不加底板、不描边。 */
+body[data-shq-theme] [data-shq-conversation] [data-chat-group-part='response'],
+body[data-shq-theme] [data-shq-conversation] [data-chat-group-part='reasoning'] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* 代码与工具卡片是允许保留底色的独立阅读面。 */
+body[data-shq-theme] [data-shq-conversation] :has(> [data-code-block-content]) {
+  background: transparent !important;
+}
+body[data-shq-theme] [data-shq-conversation] :has(> [data-code-block-content]) > :has(> [data-code-block-banner]) {
+  background: transparent !important;
+}
+body[data-shq-theme] [data-shq-conversation] [data-code-block-content] {
+  background: var(--shq-reading-fill) !important;
+  border: .5px solid var(--shq-reading-border);
+  border-radius: 12px;
+  color: var(--shq-reading-ink) !important;
+}
+body[data-shq-theme] [data-shq-conversation] [data-code-block-content] pre {
+  background: transparent !important;
+  color: var(--shq-reading-ink) !important;
+}
+body[data-shq-theme] [data-shq-conversation] [data-code-block-banner] {
+  background: color-mix(in srgb, var(--shq-reading-fill) 86%, var(--shq-reading-ink) 6%) !important;
+  color: var(--shq-reading-muted) !important;
+  border-radius: 12px 12px 0 0;
+}
+body[data-shq-theme] [data-shq-conversation] [data-code-block-banner] button {
+  color: var(--shq-reading-muted) !important;
+}
+body[data-shq-theme] [data-shq-conversation] [data-code-block-banner] button:hover {
+  color: var(--shq-reading-ink) !important;
+}
+
+body[data-shq-theme] [data-shq-conversation] table {
+  background: color-mix(in srgb, var(--shq-reading-fill) 84%, transparent);
+  border-color: var(--shq-reading-border);
+}
+body[data-shq-theme] [data-shq-conversation] th {
+  background: color-mix(in srgb, var(--shq-reading-fill) 92%, var(--shq-reading-ink) 4%);
+  color: var(--shq-reading-ink);
+}
+body[data-shq-theme] [data-shq-conversation] td {
+  color: var(--shq-reading-ink);
+  border-color: var(--shq-reading-border);
+}
+body[data-shq-theme] [data-shq-conversation] blockquote {
+  border-inline-start-color: color-mix(in srgb, var(--shq-ink) 45%, transparent);
+  color: var(--shq-ink-soft);
+}
+body[data-shq-theme] [data-shq-conversation] hr {
+  border-color: color-mix(in srgb, var(--shq-ink) 26%, transparent);
+}
+
+/* 输入区与浮动菜单保留独立底色，但去掉磨砂玻璃。 */
+body[data-shq-theme] [data-composer-card] {
+  border: 1px solid color-mix(in srgb, var(--dsw-alias-brand-primary) 22%, transparent);
+  border-radius: 18px;
+  background: var(--dsw-specific-input-major) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+  backdrop-filter: none !important;
+}
+body[data-shq-theme] [data-composer-card]:focus-within {
+  border-color: color-mix(in srgb, var(--dsw-alias-brand-primary) 55%, transparent);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .22),
+    0 0 0 2px color-mix(in srgb, var(--dsw-alias-brand-primary) 18%, transparent);
+}
+/* 夜间输入卡与场景一起沉色，避免一张亮纸压在夜景上。 */
+body[data-shq-theme][data-shq-ink='light'] [data-shq-conversation] [data-composer-card] {
+  background: rgba(22, 36, 30, .93) !important;
+  border-color: rgba(232, 237, 220, .2);
+  box-shadow: 0 14px 36px rgba(4, 10, 7, .38);
+}
+body[data-shq-theme][data-shq-ink='light'] [data-shq-conversation] [data-composer-card]:focus-within {
+  border-color: rgba(211, 224, 173, .5);
+  box-shadow: 0 14px 36px rgba(4, 10, 7, .42), 0 0 0 2px rgba(211, 224, 173, .12);
+}
+body[data-shq-theme] :is([role='menu'], [role='listbox'], [data-menu-material]) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body[data-shq-theme] :is([role='menu'], [role='listbox']):not([data-menu-material]) {
+  background-color: var(--dsw-specific-menu) !important;
+  border: .5px solid var(--dsw-alias-border-l3);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .3);
+  border-radius: 12px;
+}
+body[data-shq-theme] [data-menu-material] { background-color: transparent !important; }
+
+body[data-shq-theme] [data-composer-card] button[class*='_primary'] {
+  color: var(--dsw-alias-brand-primary-invert, #16241e) !important;
+}
+body[data-shq-theme] [data-composer-card] button[class*='_primary'] svg {
+  fill: currentColor;
+}
+
+/* present 交付卡片：宿主默认用纯白静态底，夜间换成半透明浅色图标座。 */
+body[data-shq-theme][data-shq-ink='light'] [data-presented-file='true'] [class*='fileIcon'] {
+  background: color-mix(in srgb, #fff9ea 6%, transparent);
+}
+
+/* ---------- 侧栏与公共控件 ---------- */
+body[data-shq-theme] [data-slot='sidebar'] > div {
+  background-color: var(--dsw-specific-sidebar-fill) !important;
+  border-inline-end: .5px solid var(--dsw-alias-border-l3);
+  transition: background-color .5s ease, border-color .5s ease;
+}
+
+/*
+ * 场景入夜时，侧栏随风景一起沉入墨绿；设置与弹窗仍沿用宿主外观。
+ * 这里只改作用域内的局部变量，不写回 theme 令牌，因此不会触发递归。
+ */
+body[data-shq-theme][data-shq-ink='light'] [data-slot='sidebar'] {
+  --dsw-specific-sidebar-fill: #16241e;
+  --dsw-specific-sidebar-nav-item-hover: #1d2d25;
+  --dsw-specific-sidebar-nav-item-active: #263a30;
+  --dsw-specific-sidebar-nav-item-active-accent: #2c4236;
+  --dsw-alias-label-primary: #e8eddc;
+  --dsw-alias-label-primary-bluish: #e2ead6;
+  --dsw-alias-label-primary-dimmed: #d6dfc8;
+  --dsw-alias-label-secondary: #b9c7ad;
+  --dsw-alias-label-tertiary: #9cae8f;
+  --dsw-alias-label-caption: #92a485;
+  --dsw-alias-label-dimmed: #8a9c7e;
+  --dsw-alias-border-l3: #e8eddc29;
+  --dsw-alias-border-l4: #e8eddc3d;
+  --dsw-alias-interactive-bg-hover: #e8eddc14;
+  --dsw-alias-interactive-bg-active: #e8eddc24;
+  --dsw-alias-brand-primary: #c2d29a;
+  --dsw-alias-brand-text: #e8eddc;
+  --dsw-alias-button-primary-fill: #c2d29a;
+  --dsw-alias-button-primary-hover: #d0dea9;
+  --dsw-alias-label-primary-foreground: #16241e;
+  --dsw-alias-label-primary-inverted: #16241e;
+  --dsw-alias-menu-icon: #d6dfc8;
+  color: var(--dsw-alias-label-primary);
+}
+body[data-shq-theme][data-shq-ink='light'] [data-slot='sidebar'] :is(
+  [data-slot='sidebar.brand.mark'],
+  [data-slot='sidebar.brand.name'],
+  [data-slot='sidebar.brand.mark'] svg
+) {
+  color: #e8eddc;
+}
+body[data-shq-theme][data-shq-ink='light'] [data-slot='sidebar'] [role='treeitem'][aria-selected='true'] {
+  color: #f2f5e8;
+}
+body[data-shq-theme] [data-slot='sidebar'] [role='treeitem'][aria-selected='true'] {
+  box-shadow: inset 2px 0 var(--dsw-alias-brand-primary);
+  border-radius: 8px;
+}
+body[data-shq-theme] [data-slot='sidebar'] [role='treeitem']:hover {
+  background-color: var(--dsw-specific-sidebar-nav-item-hover);
+}
+body[data-shq-theme] [data-slot='sidebar'] nav button[aria-current='page'] {
+  box-shadow: inset 2px 0 var(--dsw-alias-brand-primary);
+  border-radius: 8px;
+}
+body[data-shq-theme] [data-slot='sidebar'] :is(button, input, [role='tree']):focus-visible {
+  outline: 2px solid var(--dsw-focus-ring-color);
+  outline-offset: -2px;
+}
+
+body[data-shq-theme] :is([role='dialog'], [data-dsh-surface='settings']) {
+  border-radius: 16px;
+  /* 只用中性暗阴影做出层次；避免夜间 label-primary 变亮后在弹窗外形成光晕。 */
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .38);
+}
+
+/* 弹窗背景：去掉宿主可能在遮罩/面板上叠的磨砂、渐变或发光滤镜，只留平暗遮罩。 */
+body[data-shq-theme] :is([class*='_mask'], [data-shell-overlay], [data-dsh-modal-mask]) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-image: none !important;
+  filter: none !important;
+}
+body[data-shq-theme] :is([role='dialog'], [class*='_panel']) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+body[data-shq-theme] :is([role='dialog'], [data-dsh-surface='settings']) :is(
+  li[data-plugin-entry],
+  li[data-agent-preset-id]
+) {
+  background-color: var(--dsw-alias-settings-card-fill);
+  border: .5px solid var(--dsw-alias-settings-card-stroke);
+  border-radius: 12px;
+}
+body[data-shq-theme] :is([role='dialog'], [data-dsh-surface='settings']) :is(
+  li[data-plugin-entry],
+  li[data-agent-preset-id]
+):hover {
+  background-color: var(--dsw-alias-interactive-bg-hover-solid);
+}
+body[data-shq-theme] :is([role='dialog'], [data-dsh-surface='settings']) button[role='tab'][aria-selected='true'] {
+  color: var(--dsw-alias-brand-primary);
+  box-shadow: inset 0 -2px var(--dsw-alias-brand-primary);
+}
+body[data-shq-theme] :is(select, option, optgroup) {
+  color-scheme: light dark;
+  background-color: var(--dsw-specific-selector);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* ---------- 山栖设置页 ---------- */
+.shq-settings {
+  --shq-row-border: var(--dsw-alias-border-l2);
+  container: shq-settings / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--shq-sans);
+}
+.shq-settings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+.shq-settings-title h2 {
+  margin: 0 0 6px;
+  font-family: var(--shq-serif);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  line-height: 1.3;
+}
+.shq-settings-title p {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.shq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  margin-top: 6px;
+  padding: 5px 10px;
+  border: .5px solid var(--dsw-alias-border-l3);
+  border-radius: 999px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+.shq-badge i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.shq-badge[data-active='true'] {
+  color: var(--dsw-alias-brand-primary);
+  border-color: color-mix(in srgb, var(--dsw-alias-brand-primary) 40%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-brand-primary) 10%, transparent);
+}
+
+/* 设置页缩略图：直接复用聊天背景的真实场景与昼夜配色。 */
+.shq-mini-scene {
+  position: relative;
+  height: 210px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  border: .5px solid var(--dsw-alias-border-l2);
+  border-radius: 14px;
+  background: #16241e;
+  contain: paint;
+}
+.shq-mini-canvas {
+  position: absolute;
+  inset: 0;
+}
+.shq-mini-canvas .shq-world { width: 100%; height: 100%; }
+.shq-mini-canvas :is(.shq-farmer, .shq-farmer-shadow) { display: none !important; }
+.shq-mini-canvas[data-shq-ambient='off'] :is(.shq-twinkle, .shq-firefly, .shq-smoke-plume) {
+  animation: none !important;
+}
+.shq-mini-canvas[data-shq-ambient='off'] .shq-fireflies { visibility: hidden; }
+.shq-mini-canvas[data-shq-paused='on'] * { animation-play-state: paused !important; }
+.shq-mini-caption {
+  position: absolute;
+  z-index: 2;
+  left: 14px;
+  bottom: 10px;
+  color: #f2f6e8;
+  font-family: var(--shq-serif);
+  font-size: 13px;
+  letter-spacing: .2em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .55);
+}
+
+.shq-group { margin-bottom: 26px; min-width: 0; }
+.shq-group-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 2px;
+  color: var(--dsw-alias-brand-primary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  line-height: 20px;
+}
+.shq-group-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--dsw-alias-border-l2);
+}
+.shq-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 26px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--shq-row-border);
+}
+.shq-group .shq-row:last-of-type { border-bottom: 0; }
+.shq-row-copy { flex: 1; min-width: 0; }
+.shq-row-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+.shq-row small {
+  display: block;
+  max-width: 44ch;
+  margin-top: 4px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.shq-segments {
+  display: inline-flex;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 72%, transparent);
+}
+.shq-segment {
+  min-width: 64px;
+  min-height: 30px;
+  padding: 4px 12px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color .14s ease, color .14s ease, border-color .14s ease;
+}
+.shq-segment:hover:not(:disabled) {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+.shq-segment[aria-pressed='true'] {
+  color: var(--dsw-alias-brand-primary);
+  background: color-mix(in srgb, var(--dsw-alias-brand-primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--dsw-alias-brand-primary) 34%, transparent);
+}
+.shq-segment:focus-visible,
+.shq-preset:focus-visible,
+.shq-button:focus-visible,
+.shq-switch:focus-visible,
+.shq-range:focus-visible {
+  outline: 2px solid var(--dsw-focus-ring-color);
+  outline-offset: 2px;
+}
+.shq-segment:disabled,
+.shq-preset:disabled,
+.shq-button:disabled,
+.shq-switch:disabled,
+.shq-range:disabled { opacity: .42; cursor: not-allowed; }
+
+.shq-row-slider { align-items: flex-start; }
+.shq-range-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 46%;
+  min-width: 220px;
+}
+.shq-range {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+.shq-range::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 20%, transparent);
+}
+.shq-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -5.5px;
+  border: 2px solid var(--dsw-alias-bg-base);
+  border-radius: 50%;
+  background: var(--dsw-alias-brand-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
+}
+.shq-range::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 20%, transparent);
+}
+.shq-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--dsw-alias-bg-base);
+  border-radius: 50%;
+  background: var(--dsw-alias-brand-primary);
+}
+.shq-range:disabled::-webkit-slider-thumb,
+.shq-range:disabled::-moz-range-thumb { opacity: .5; }
+.shq-range-value {
+  flex: 0 0 58px;
+  color: var(--dsw-alias-brand-primary);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  text-align: right;
+}
+.shq-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 0 2px 0;
+}
+.shq-preset {
+  min-height: 30px;
+  padding: 4px 14px;
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color .14s ease, color .14s ease, border-color .14s ease;
+}
+.shq-preset:hover:not(:disabled) {
+  color: var(--dsw-alias-brand-primary);
+  border-color: color-mix(in srgb, var(--dsw-alias-brand-primary) 48%, transparent);
+}
+.shq-preset[aria-pressed='true'] {
+  color: var(--dsw-alias-brand-primary);
+  background: color-mix(in srgb, var(--dsw-alias-brand-primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--dsw-alias-brand-primary) 42%, transparent);
+}
+.shq-live {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 10px 0 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.shq-live b {
+  color: var(--dsw-alias-label-primary);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.shq-live[data-preview='true'] b { color: var(--dsw-alias-brand-primary); }
+
+.shq-switch {
+  flex-shrink: 0;
+  width: 46px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dsw-alias-label-tertiary) 34%, transparent);
+  cursor: pointer;
+  transition: background-color .16s ease;
+}
+.shq-switch[aria-checked='true'] { background: var(--dsw-alias-brand-primary); }
+.shq-switch-track {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  box-sizing: border-box;
+}
+.shq-switch-track i {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--dsw-alias-switch-thumb);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .22);
+  transition: transform .16s ease;
+}
+.shq-switch[aria-checked='true'] .shq-switch-track i { transform: translateX(20px); }
+
+.shq-farmer-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.shq-farmer-state i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .6;
+}
+.shq-farmer-state[data-working='true'] { color: var(--dsw-alias-brand-primary); }
+.shq-farmer-state[data-working='true'] i { opacity: 1; animation: shq-pulse 1.6s ease-in-out infinite; }
+@keyframes shq-pulse { 50% { transform: scale(.55); opacity: .35; } }
+
+.shq-row-readonly { padding-block: 12px; }
+.shq-readonly-value {
+  flex-shrink: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.shq-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+  padding-top: 18px;
+  border-top: 1px solid var(--dsw-alias-border-l2);
+}
+.shq-button {
+  min-height: 34px;
+  padding: 6px 16px;
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color .14s ease, color .14s ease, border-color .14s ease;
+}
+.shq-button:hover:not(:disabled) {
+  border-color: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-brand-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+.shq-button-primary {
+  margin-inline-start: auto;
+  border-color: var(--dsw-alias-brand-primary);
+  background: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-brand-primary-invert, #faf6e9);
+}
+.shq-button-primary:hover:not(:disabled) {
+  color: var(--dsw-alias-brand-primary-invert, #faf6e9);
+  background: color-mix(in srgb, var(--dsw-alias-brand-primary) 88%, #fff);
+}
+.shq-status {
+  min-height: 20px;
+  margin-top: 10px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.shq-status[data-error='true'] { color: var(--dsw-alias-state-error-primary); }
+
+.shq-bridge { display: none !important; }
+body[data-shq-theme] [data-slot='conversation.composer.dock'] > :has(> [data-shq-working-bridge]) {
+  display: contents !important;
+}
+
+@container shq-settings (max-width: 560px) {
+  .shq-settings-head { flex-wrap: wrap; gap: 8px; }
+  .shq-badge { margin-top: 0; }
+  .shq-mini-scene { height: 150px; }
+  .shq-row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .shq-segments { align-self: flex-start; max-width: 100%; }
+  .shq-range-wrap { flex-basis: auto; width: 100%; min-width: 0; }
+  .shq-actions > .shq-button { flex: 1; }
+  .shq-button-primary { margin-inline-start: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shq-settings *,
+  .shq-farmer-state[data-working='true'] i {
+    animation: none !important;
+    transition: none !important;
+  }
+}

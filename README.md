@@ -5,6 +5,8 @@
 - npm 包名：`dsh-shanqi-theme`
 - 配置入口：`ui-shanqi-theme`
 - 显示名称：山栖
+- GitHub：[moshangzhe/dsh-shanqi-theme](https://github.com/moshangzhe/dsh-shanqi-theme)
+- 已收录：[Awesome DSH Plugin · Themes & Appearance](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin#themes--appearance)
 - 目标版本：**DSH 0.2.1-rc.2**（Web 与 Windows Desktop）
 - 独立场景预览：[docs/preview.html](docs/preview.html)
 

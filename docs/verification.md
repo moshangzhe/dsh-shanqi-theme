@@ -5,6 +5,7 @@
 ## 环境与方法
 
 - 源代码与构建：本仓库 `dsh-shanqi-theme` 0.1.8。
+- 外部收录：Awesome DSH Plugin 的收录 PR [#8456](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/8456) 已于 2026-10-23 由维护者合并，条目位于 `Themes & Appearance`，中英文 README 均已生成。
 - Web 验收：使用独立的临时 `DSH_HOME`（`_audit_home` / `_card_home` / `_diff_home` / `_preview_home` / `_work_home`）创建 `web` profile，安装本插件，通过 `dsh web --no-open --port 53170/53171/53172/53190/53200` 启动；用 Edge 155 headless + CDP 打开页面，读取真实 DOM、计算样式与截图。任务联动复测使用本机 mock provider `127.0.0.1:19091`（`openai-completions`）。没有使用演示 HTML，也没有在插件内伪造聊天或设置。
 - 缩略图验收：设置页 `.shq-mini-scene` 内为真实场景，回读 333 个节点、4 张缓存图层，`--shq-sky-top/#10253e` 与聊天背景一致；`data-shq-ambient=off`、`data-shq-reduced=on`、`data-shq-paused=on`，不运行农人与环境动画。
 - 夜间配色专项：`ui-theme.preference=light` + 主题手动预览 `22:00`，逐项审计侧栏、欢迎页、设置弹窗、菜单、输入卡、开关、滑杆、发送按钮、present 交付卡、文件变更卡、文件/代码 diff 与代码阅读面；低对比文字 0 项，浅色自带背景仅剩品牌色主按钮/开关/滑杆等有意强调控件。present 交付卡与文件变更卡使用宿主 `--dsw-static-neutral-50/100` 写死纸面，已改为主题纸面（昼 `#fffdf4` / 夜 `#1c2d25`）；夜间实测卡底 `rgb(28,45,37)`、文字 `rgb(255,249,234)`。

@@ -38,6 +38,7 @@
 - diff：夜间代码/文件 diff 行底与状态文字对比度 ≥ 4.8:1，浅色行文字 ≥ 4.5:1，八个 diff 令牌均提供浅/深值。
 - 弹窗光晕：浮动层阴影只使用中性黑；遮罩/面板禁用 `backdrop-filter`、`filter` 与 `background-image`。夜间实测设置弹窗 `box-shadow: rgba(0,0,0,.38) 0 18px 50px`，遮罩 `rgba(0,0,0,.24)`，无磨砂与渐变。
 - 设置缩略图：复用 `createSceneView` 与 `computeScene`，与聊天背景同图层、同昼夜令牌；关闭农人与环境动画，没有常驻 rAF。
+- 市场截图：仓库根 `screenshots.json` 声明 8 张 1440×900 截图（晨/昼/暮/夜、聊天、夜间设置、任务运行中的农人），均为仓库内相对路径；dsh-market 下一次 nightly 构建读取。
 
 ## 真实 Web 界面验收
 

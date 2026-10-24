@@ -3,6 +3,7 @@
 一套可安装的 DeepSeek Harness 田园主题插件：把真实的欢迎页、聊天、侧栏、设置页与公共控件接入一幅手绘山湖；场景按本机系统时间连续呈现晨光、白昼、黄昏与夜晚；田间农人由当前展示对话的**任务工作状态（`SessionSnapshot.running`）**驱动进出场。
 
 - npm 包名：`dsh-shanqi-theme`
+- npm 页面：https://www.npmjs.com/package/dsh-shanqi-theme
 - 配置入口：`ui-shanqi-theme`
 - 显示名称：山栖
 - GitHub：[moshangzhe/dsh-shanqi-theme](https://github.com/moshangzhe/dsh-shanqi-theme)

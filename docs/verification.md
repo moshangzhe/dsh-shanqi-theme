@@ -4,7 +4,7 @@
 
 ## 环境与方法
 
-- 源代码与构建：本仓库 `dsh-shanqi-theme` 0.1.8。
+- 源代码与构建：本仓库 `dsh-shanqi-theme` 0.1.9。
 - 外部收录：Awesome DSH Plugin 的收录 PR [#8456](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/8456) 已于 2026-10-23 由维护者合并，条目位于 `Themes & Appearance`，中英文 README 均已生成。
 - Web 验收：使用独立的临时 `DSH_HOME`（`_audit_home` / `_card_home` / `_diff_home` / `_preview_home` / `_work_home`）创建 `web` profile，安装本插件，通过 `dsh web --no-open --port 53170/53171/53172/53190/53200` 启动；用 Edge 155 headless + CDP 打开页面，读取真实 DOM、计算样式与截图。任务联动复测使用本机 mock provider `127.0.0.1:19091`（`openai-completions`）。没有使用演示 HTML，也没有在插件内伪造聊天或设置。
 - 缩略图验收：设置页 `.shq-mini-scene` 内为真实场景，回读 333 个节点、4 张缓存图层，`--shq-sky-top/#10253e` 与聊天背景一致；`data-shq-ambient=off`、`data-shq-reduced=on`、`data-shq-paused=on`，不运行农人与环境动画。
@@ -21,7 +21,7 @@
 | `tsc --noEmit` | 通过 | 无类型错误 |
 | `node --test tests/*.test.mjs` | 通过 | 39 项测试全部通过 |
 | `node scripts/build.mjs` | 通过 | `lib/index.js`、`lib/client.js`、`docs/preview.html` |
-| `pnpm pack` | 通过 | `dsh-shanqi-theme-0.1.8.tgz`；在全新 Web profile 中安装该 tgz 后 stage、主题样式与“山栖”设置页均加载 |
+| `pnpm pack` | 通过 | `dsh-shanqi-theme-0.1.9.tgz`；在全新 Web profile 中安装该 tgz 后 stage、主题样式与“山栖”设置页均加载 |
 | 客户端模块语法 | 通过 | `node --check lib/client.js` |
 | 宿主模块语法 | 通过 | `node --check lib/index.js` |
 

@@ -50,12 +50,12 @@ pnpm run build
 pnpm pack
 ```
 
-安装生成的 `dsh-shanqi-theme-0.1.8.tgz`。
+安装生成的 `dsh-shanqi-theme-0.1.9.tgz`。
 
 ### Web
 
 ```powershell
-dsh plugin --profile web add "C:\path\to\dsh-shanqi-theme-0.1.8.tgz"
+dsh plugin --profile web add "C:\path\to\dsh-shanqi-theme-0.1.9.tgz"
 dsh web
 ```
 
@@ -66,7 +66,7 @@ dsh web
 完全退出 Desktop（包括托盘进程），使用桌面版随附的 `dsh` 命令安装：
 
 ```powershell
-dsh plugin --profile desktop add "C:\path\to\dsh-shanqi-theme-0.1.8.tgz"
+dsh plugin --profile desktop add "C:\path\to\dsh-shanqi-theme-0.1.9.tgz"
 ```
 
 重新打开 Desktop 后生效。安装后主题默认启用；在 **设置 → 山栖** 中可暂停或调整。

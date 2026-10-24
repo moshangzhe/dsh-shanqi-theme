@@ -1,7 +1,15 @@
 {
   "name": "dsh-shanqi-theme",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "「山栖」田园主题：把 DeepSeek Harness 接入真实的山湖昼夜与农人任务联动。",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moshangzhe/dsh-shanqi-theme.git"
+  },
+  "homepage": "https://github.com/moshangzhe/dsh-shanqi-theme#readme",
+  "bugs": {
+    "url": "https://github.com/moshangzhe/dsh-shanqi-theme/issues"
+  },
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -16,6 +24,7 @@
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
+    "screenshots.json",
     "README.md",
     "LICENSE",
     "NOTICE.md",
